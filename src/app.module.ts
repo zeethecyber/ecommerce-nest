@@ -11,9 +11,24 @@ import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { ProductsModule } from './products/products.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
-  imports: [UsersModule, CategoriesModule, SubcategoriesModule, ReviewsModule, OrdersModule, NotificationsModule, AuthModule, CartModule, WishlistModule, ProductsModule],
+  imports: [
+    UsersModule,
+    CategoriesModule,
+    SubcategoriesModule,
+    ReviewsModule,
+    OrdersModule,
+    NotificationsModule,
+    AuthModule,
+    CartModule,
+    WishlistModule,
+    ProductsModule,
+    CloudinaryModule,
+    ImagesModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

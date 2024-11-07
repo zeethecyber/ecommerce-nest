@@ -2,16 +2,25 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { DatabaseService } from 'src/database/database.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly dbService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
   async create(
     createProductDto: CreateProductDto,
     images: Express.Multer.File[],
   ) {
     try {
-      const dummyImages = images.map((image) => image.filename);
+      const imageUrls = await Promise.all(
+        images.map(async (image) => {
+          return await this.cloudinary.uploadImage(image);
+        }),
+      );
+
       const product = await this.dbService.product.create({
         data: {
           name: createProductDto.name,
@@ -19,8 +28,8 @@ export class ProductsService {
           price: +createProductDto.price,
           stock: 10,
           images: {
-            create: dummyImages.map(() => ({
-              url: '',
+            create: imageUrls.map(({ url }) => ({
+              url: url,
             })),
           },
           subCategory: {
