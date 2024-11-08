@@ -1,26 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private readonly dbService: DatabaseService) {}
+  async findOne(email: string) {
+    try {
+      const user = await this.dbService.user.findUnique({
+        where: {
+          email,
+        },
+      });
+      if (!user) {
+        throw 'User not found';
+      }
+      return user;
+    } catch (error) {
+      throw new HttpException(error?.meta?.cause || 'User not found', 404);
+    }
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
+  async register(data: CreateUserDto) {
+    try {
+      const hashedPassword = await bcrypt.hash(
+        data.password,
+        +process.env.SALT_ROUNDS,
+      );
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+      const newUser = await this.dbService.user.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          password: hashedPassword,
+          role: data.role,
+        },
+      });
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+      return newUser;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error?.meta?.cause || 'User not created', 500);
+    }
   }
 }

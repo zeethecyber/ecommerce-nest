@@ -10,11 +10,22 @@ export class ProductsService {
     private readonly dbService: DatabaseService,
     private readonly cloudinary: CloudinaryService,
   ) {}
+
   async create(
     createProductDto: CreateProductDto,
     images: Express.Multer.File[],
   ) {
     try {
+      if (images.length === 0) {
+        throw new HttpException(
+          'At least one image is required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Validate images
+      this.validateImages(images);
+
       const imageUrls = await Promise.all(
         images.map(async (image) => {
           return await this.cloudinary.uploadImage(image);
@@ -96,7 +107,15 @@ export class ProductsService {
     images: Express.Multer.File[],
   ) {
     try {
-      const dummyImages = images.map((image) => image.filename);
+      // Validate images
+      this.validateImages(images);
+
+      const imageUrls = await Promise.all(
+        images.map(async (image) => {
+          return await this.cloudinary.uploadImage(image);
+        }),
+      );
+
       const product = await this.dbService.product.update({
         where: {
           id: id,
@@ -106,12 +125,13 @@ export class ProductsService {
           description: updateProductDto.description,
           price: +updateProductDto.price,
           images: {
-            create: dummyImages.map(() => ({
-              url: '',
+            create: imageUrls.map(({ url }) => ({
+              url: url,
             })),
           },
         },
       });
+
       return {
         data: product,
         message: 'Product updated successfully',
@@ -139,5 +159,16 @@ export class ProductsService {
         cause: error.message,
       });
     }
+  }
+
+  private async validateImages(images: Express.Multer.File[]) {
+    images.forEach((image) => {
+      if (!image.mimetype.includes('image')) {
+        throw new HttpException(
+          'Only images are allowed',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    });
   }
 }

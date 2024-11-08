@@ -13,9 +13,13 @@ import { WishlistModule } from './wishlist/wishlist.module';
 import { ProductsModule } from './products/products.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ImagesModule } from './images/images.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UsersModule,
     CategoriesModule,
     SubcategoriesModule,
