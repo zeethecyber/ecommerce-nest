@@ -1,20 +1,57 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class WishlistService {
   constructor(private readonly dbService: DatabaseService) {}
-  async create(createWishlistDto: CreateWishlistDto) {
+  async create(userId: string, createWishlistDto: CreateWishlistDto) {
     try {
-      const wishlist = await this.dbService.wishlist.create({
-        data: {
-          productId: createWishlistDto.productId,
-          userId: '', // TODO: Add userId
+      const wishlist = await this.dbService.wishlist.findFirst({
+        where: {
+          userId: userId,
         },
       });
+
+      if (wishlist) {
+        await this.dbService.wishlist.update({
+          where: {
+            id: wishlist.id,
+          },
+          data: {
+            items: {
+              create: {
+                Product: {
+                  connect: {
+                    id: createWishlistDto.productId,
+                  },
+                },
+              },
+            },
+          },
+        });
+      } else {
+        await this.dbService.wishlist.create({
+          data: {
+            User: {
+              connect: {
+                id: userId,
+              },
+            },
+            items: {
+              create: {
+                Product: {
+                  connect: {
+                    id: createWishlistDto.productId,
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
       return {
-        data: wishlist,
+        data: null,
         message: 'Product has been added to wishlist successfully',
       };
     } catch (error) {
@@ -24,9 +61,24 @@ export class WishlistService {
 
   async findAll(userId: string) {
     try {
-      const wishlist = await this.dbService.wishlist.findMany({
+      const wishlist = await this.dbService.wishlist.findFirst({
         where: {
           userId: userId,
+        },
+        select: {
+          id: true,
+          items: {
+            select: {
+              id: true,
+              Product: {
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -39,11 +91,11 @@ export class WishlistService {
     }
   }
 
-  async remove(id: string) {
+  async remove(wishListItemId: string) {
     try {
-      await this.dbService.wishlist.delete({
+      await this.dbService.wishlistItem.delete({
         where: {
-          id: id,
+          id: wishListItemId,
         },
       });
 
@@ -52,10 +104,23 @@ export class WishlistService {
         message: 'Product has been removed from wishlist successfully',
       };
     } catch (error) {
-      throw new HttpException(
-        error?.meta?.cause || 'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(error, 500);
+    }
+  }
+
+  async removeAll(userId: string) {
+    try {
+      await this.dbService.wishlist.deleteMany({
+        where: {
+          userId: userId,
+        },
+      });
+      return {
+        data: null,
+        message: 'Wishlist has been cleared successfully',
+      };
+    } catch (error) {
+      throw new HttpException(error, 500);
     }
   }
 }

@@ -43,7 +43,7 @@ export class ProductsService {
               url: url,
             })),
           },
-          subCategory: {
+          SubCategory: {
             connect: {
               id: createProductDto.subCategoryId,
             },

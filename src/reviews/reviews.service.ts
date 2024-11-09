@@ -9,14 +9,14 @@ export class ReviewsService {
 
   async create(userId: string, createReviewDto: CreateReviewDto) {
     try {
-      const review = await this.dbService.reviews.create({
+      const review = await this.dbService.review.create({
         data: {
-          user: {
+          User: {
             connect: {
               id: userId,
             },
           },
-          product: {
+          Product: {
             connect: {
               id: createReviewDto.productId,
             },
@@ -37,7 +37,7 @@ export class ReviewsService {
 
   async findAll() {
     try {
-      const reviews = await this.dbService.reviews.findMany();
+      const reviews = await this.dbService.review.findMany();
 
       if (!reviews.length) {
         throw 'No reviews found';
@@ -54,7 +54,7 @@ export class ReviewsService {
 
   async findOne(id: string) {
     try {
-      const review = await this.dbService.reviews.findFirstOrThrow({
+      const review = await this.dbService.review.findFirstOrThrow({
         where: {
           id,
         },
@@ -78,7 +78,7 @@ export class ReviewsService {
 
   async update(id: string, updateReviewDto: UpdateReviewDto) {
     try {
-      const review = await this.dbService.reviews.update({
+      const review = await this.dbService.review.update({
         where: {
           id,
         },
@@ -99,7 +99,7 @@ export class ReviewsService {
 
   async remove(id: string) {
     try {
-      await this.dbService.reviews.delete({
+      await this.dbService.review.delete({
         where: {
           id,
         },

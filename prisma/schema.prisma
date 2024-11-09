@@ -21,18 +21,18 @@ enum Role {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
-  name          String?
-  password      String
-  role          Role            @default(USER)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  Cart          Cart[]
-  Order         Order[]
-  Reviews       Reviews[]
-  Notifications Notifications[]
-  Wishlist      Wishlist[]
+  id           String         @id @default(cuid())
+  email        String         @unique
+  name         String?
+  password     String
+  role         Role           @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Cart         Cart?
+  Order        Order[]
+  Review       Review[]
+  Notification Notification[]
+  Wishlist     Wishlist[]
 }
 
 model Category {
@@ -46,84 +46,130 @@ model Category {
 model SubCategory {
   id         String    @id @default(cuid())
   name       String
-  category   Category  @relation(fields: [categoryId], references: [id])
   categoryId String
+  products   Product[]
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
-  products   Product[]
+
+  Category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
 model Product {
-  id            String      @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
   description   String
   price         Float
   stock         Int
-  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id])
   subCategoryId String
   images        Image[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  Cart          Cart[]
-  Order         Order[]
-  Reviews       Reviews[]
-  Wishlist      Wishlist[]
+  CartItem      CartItem[]
+  Reviews       Review[]
+  WishlistItem  WishlistItem[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  SubCategory SubCategory @relation(fields: [subCategoryId], references: [id])
 }
 
 model Image {
-  id        String   @id @default(cuid())
-  url       String
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  url         String
+  productId   String?
+  orderItemId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Product   Product?   @relation(fields: [productId], references: [id])
+  OrderItem OrderItem? @relation(fields: [orderItemId], references: [id])
 }
 
 model Cart {
-  id        String    @id @default(cuid())
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  cartItems CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Order {
-  id        String    @id @default(cuid())
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         String      @id @default(cuid())
+  userId     String
+  orderItems OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
 }
 
-model Reviews {
+model OrderItem {
+  id          String   @id @default(cuid())
+  productId   String
+  name        String
+  description String
+  images      Image[]
+  price       Float
+  quantity    Int
+  orderId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Review {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
   productId String
   rating    Int
   review    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  User    User    @relation(fields: [userId], references: [id])
+  Product Product @relation(fields: [productId], references: [id])
 }
 
-model Notifications {
+model Notification {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String
   message   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Wishlist {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  id        String         @id @default(cuid())
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  items     WishlistItem[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  productId  String   @unique
+  wishlistId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  Wishlist Wishlist? @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
 }
