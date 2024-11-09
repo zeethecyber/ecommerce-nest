@@ -8,17 +8,24 @@ import {
   Delete,
   UploadedFiles,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { Roles } from 'src/roles/roles.decorator';
+import { ROLES } from 'src/utils/constants';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { RolesGuard } from 'src/roles/roles.guard';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @Roles(ROLES.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @UseInterceptors(FilesInterceptor('images'))
   create(
     @UploadedFiles() images: Express.Multer.File[],
@@ -38,6 +45,8 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @Roles(ROLES.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   @UseInterceptors(FilesInterceptor('images'))
   update(
     @Param('id') id: string,
@@ -48,6 +57,8 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @Roles(ROLES.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }

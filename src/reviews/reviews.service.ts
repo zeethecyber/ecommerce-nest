@@ -7,13 +7,13 @@ import { DatabaseService } from 'src/database/database.service';
 export class ReviewsService {
   constructor(private readonly dbService: DatabaseService) {}
 
-  async create(createReviewDto: CreateReviewDto) {
+  async create(userId: string, createReviewDto: CreateReviewDto) {
     try {
       const review = await this.dbService.reviews.create({
         data: {
           user: {
             connect: {
-              id: createReviewDto.userId,
+              id: userId,
             },
           },
           product: {
