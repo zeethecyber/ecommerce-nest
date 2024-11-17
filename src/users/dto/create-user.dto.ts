@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import { IsIn, IsString } from 'class-validator';
 
 export class CreateUserDto {
@@ -10,6 +11,9 @@ export class CreateUserDto {
   @IsString()
   password: string;
 
-  @IsIn(['ADMIN', 'USER'])
-  role: 'ADMIN' | 'USER';
+  @IsIn([Role.ADMIN, Role.USER])
+  role: Role;
+
+  @IsString()
+  address: string;
 }

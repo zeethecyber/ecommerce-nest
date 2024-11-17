@@ -1,4 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateOrderDto } from './create-order.dto';
+import { OrderStatus } from '@prisma/client';
+import { IsIn } from 'class-validator';
 
-export class UpdateOrderDto extends PartialType(CreateOrderDto) {}
+export class UpdateOrderDto {
+  @IsIn([
+    OrderStatus.PENDING,
+    OrderStatus.PLACED,
+    OrderStatus.DISPATCHED,
+    OrderStatus.CANCELLED,
+    OrderStatus.DELIVERED,
+  ])
+  status: OrderStatus;
+}

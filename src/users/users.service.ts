@@ -58,6 +58,7 @@ export class UsersService {
           email: data.email,
           password: hashedPassword,
           role: data.role,
+          address: data.address,
         },
       });
 

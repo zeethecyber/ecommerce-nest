@@ -42,6 +42,7 @@ export class AuthService {
       token: await this.jwtService.signAsync({
         sub: user.id,
         email: user.email,
+        role: user.role,
       }),
       message: 'User registered successfully',
     };

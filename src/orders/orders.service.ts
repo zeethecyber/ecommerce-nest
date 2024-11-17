@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -38,6 +39,7 @@ export class OrdersService {
                 description: _item.Product.description,
                 price: _item.Product.price,
                 quantity: _item.quantity,
+                status: 'PENDING',
               })),
             },
           },
@@ -92,6 +94,7 @@ export class OrdersService {
               id: true,
               name: true,
               email: true,
+              address: true,
             },
           },
         },
@@ -111,7 +114,23 @@ export class OrdersService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async update(userId: string, id: string, updateOrderDto: UpdateOrderDto) {
+    try {
+      const order = await this.dbService.order.update({
+        where: {
+          id: id,
+          userId: userId,
+        },
+        data: {
+          status: updateOrderDto.status,
+        },
+      });
+      return {
+        data: order,
+        message: 'Order updated successfully',
+      };
+    } catch (error) {
+      throw new HttpException(error, 500);
+    }
   }
 }

@@ -26,6 +26,7 @@ model User {
   name         String?
   password     String
   role         Role           @default(USER)
+  address      String
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   Cart         Cart?
@@ -105,14 +106,22 @@ model CartItem {
   Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
+enum OrderStatus {
+  PENDING
+  PLACED
+  DISPATCHED
+  CANCELLED
+  DELIVERED
+}
+
 model Order {
   id         String      @id @default(cuid())
   userId     String
   orderItems OrderItem[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-
-  User User @relation(fields: [userId], references: [id])
+  status     OrderStatus @default(PENDING)
+  User       User        @relation(fields: [userId], references: [id])
 }
 
 model OrderItem {

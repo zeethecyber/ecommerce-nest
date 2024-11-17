@@ -3,13 +3,15 @@ import {
   Get,
   Post,
   Param,
-  Delete,
   UseGuards,
   Req,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Request } from 'express';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -36,8 +38,14 @@ export class OrdersController {
     return this.ordersService.findOne(user.sub, id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
+  @Patch(':id')
+  @UseGuards(AuthGuard)
+  update(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+  ) {
+    const user = req.user;
+    return this.ordersService.update(user.sub, id, updateOrderDto);
   }
 }
