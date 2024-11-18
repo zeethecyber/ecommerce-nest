@@ -1,10 +1,14 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly dbService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(userId: string) {
     try {
@@ -50,6 +54,10 @@ export class OrdersService {
         where: {
           userId,
         },
+      });
+
+      this.notificationsService.sendNotificationToUser(userId, {
+        message: `Order ${order.id} placed successfully`,
       });
 
       return {
@@ -125,6 +133,11 @@ export class OrdersService {
           status: updateOrderDto.status,
         },
       });
+
+      this.notificationsService.sendNotificationToUser(userId, {
+        message: `Order ${order.id} status updated to ${order.status}`,
+      });
+
       return {
         data: order,
         message: 'Order updated successfully',

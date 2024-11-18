@@ -15,7 +15,10 @@ export class NotificationsService {
     return this.userNotificationSubjects.get(userId).asObservable();
   }
 
-  async sendNotificationToUser(userId: string, notification: any) {
+  async sendNotificationToUser(
+    userId: string,
+    notification: { message: string },
+  ) {
     try {
       await this.storeNotification(userId, notification.message);
       if (this.userNotificationSubjects.has(userId)) {
