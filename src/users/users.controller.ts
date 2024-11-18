@@ -27,6 +27,13 @@ export class UsersController {
     return this.usersService.findById(req.user.sub);
   }
 
+  @Get()
+  @Roles(ROLES.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  async findAll() {
+    return this.usersService.findAll();
+  }
+
   @Patch(':id')
   @UseGuards(AuthGuard)
   async update(@Param('id') id: string, @Body() data: UpdateUserDto) {

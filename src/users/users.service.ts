@@ -25,6 +25,26 @@ export class UsersService {
     }
   }
 
+  async findAll() {
+    try {
+      const users = await this.dbService.user.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          address: true,
+        },
+      });
+      return {
+        data: users,
+        message: 'Users found',
+      };
+    } catch (error) {
+      throw new HttpException(error?.meta?.cause || 'Users not found', 404);
+    }
+  }
+
   async findById(id: string) {
     try {
       const user = await this.dbService.user.findUnique({
